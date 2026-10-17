@@ -1,28 +1,47 @@
-import java.util.concurrent.atomic.AtomicReference;
+class ChickenVsEgg {
 
-public class Main {
-    public static void main(String[] args) throws InterruptedException {
-        AtomicReference<String> lastWord = new AtomicReference<>("");
-        Thread chicken = new Thread(() -> {
+    static class Speaker implements Runnable {
+        private final String t;
+
+        public Speaker(String t) {
+            this.t = t;
+        }
+
+        @Override
+        public void run() {
             for (int i = 0; i < 5; i++) {
-                System.out.println("Курица");
-                lastWord.set("Курица");
-                Thread.yield();
+                System.out.println(t);
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
-        }, "ChickenThread");
-        Thread egg = new Thread(() -> {
-            for (int i = 0; i < 5; i++) {
-                System.out.println("Яйцо");
-                lastWord.set("Яйцо");
-                Thread.yield();
-            }
-        }, "EggThread");
+        }
+    }
+
+    public static void main(String[] args) {
+        Thread chicken = new Thread(new Speaker("Курица"), "Курица");
+        Thread egg = new Thread(new Speaker("Яйцо"), "Яйцо");
+
         chicken.start();
         egg.start();
-        chicken.join();
-        egg.join();
-        System.out.println();
-        System.out.println("Последнее слово в споре: " + lastWord.get());
-        System.out.println("Победитель: " + lastWord.get());
+
+        try {
+            chicken.join();
+            egg.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("Спор окончен.");
+
+        if (!chicken.isAlive() && !egg.isAlive()) {
+            if (chicken.getId() > egg.getId()) {
+                System.out.println("Победила Курица");
+            } else {
+                System.out.println("Победило Яйцо");
+            }
+        }
     }
 }
